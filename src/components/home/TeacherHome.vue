@@ -129,28 +129,15 @@ onMounted(fetchData);
   <div class="timetable">
     <div class="timetable-controller">
       <!-- 总课表按钮 -->
-      <el-button
-        class="el-button"
-        size="large"
-        style="margin-top: 20px; margin-left: 15px"
-        :type="selectedButton === 0 ? 'primary' : 'default'"
-        :plain="selectedButton !== 0"
-        @click="selectAll"
-      >
+      <el-button class="el-button" size="large" style="margin-top: 20px; margin-left: 15px"
+        :type="selectedButton === 0 ? 'primary' : 'default'" :plain="selectedButton !== 0" @click="selectAll">
         总课表
       </el-button>
 
       <!-- 按周次选择按钮 -->
-      <el-button
-        v-for="number in 19"
-        :key="number"
-        class="el-button"
-        size="large"
-        style="margin-top: 20px; margin-left: 15px"
-        :type="number === selectedButton ? 'primary' : 'default'"
-        :plain="number !== selectedButton"
-        @click="selectButton(number)"
-      >
+      <el-button v-for="number in 19" :key="number" class="el-button" size="large"
+        style="margin-top: 20px; margin-left: 15px" :type="number === selectedButton ? 'primary' : 'default'"
+        :plain="number !== selectedButton" @click="selectButton(number)">
         {{ number === currentWeek ? "本周" : `第${number}周` }}
       </el-button>
     </div>
@@ -176,21 +163,9 @@ onMounted(fetchData);
                 "节"
               }}
             </td>
-            <td
-              v-for="day in weekOfDays"
-              :key="day"
-              class="course-box-background"
-              @click="showModal(section, day + 1)"
-            >
-              <div
-                v-if="getCellData(section, day + 1).length"
-                class="course-box"
-              >
-                <div
-                  v-for="course in getCellData(section, day + 1)"
-                  :key="course.name"
-                  class="course-item"
-                >
+            <td v-for="day in weekOfDays" :key="day" class="course-box-background" @click="showModal(section, day + 1)">
+              <div v-if="getCellData(section, day + 1).length" class="course-box">
+                <div v-for="course in getCellData(section, day + 1)" :key="course.name" class="course-item">
                   <!-- {{ course.name }} | {{ course.clazz }} | {{ course.labName }} -->
                   <p>{{ course.name }}</p>
                   <p>{{ course.clazz }}</p>
@@ -212,17 +187,21 @@ onMounted(fetchData);
   padding-top: 0;
   width: 1000px;
 }
+
 .timetable-controller .el-button {
   margin-left: 10px;
 }
+
 .timetable p,
 td {
   font-size: 12px;
   text-align: center;
 }
+
 .timetable-contain {
   margin-top: 20px;
 }
+
 .course-box {
   display: inline-block;
   background: #d9ecff;
@@ -236,12 +215,14 @@ td {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 .course-item {
   margin: 0;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 .course-box-background {
   text-align: center;
   background: rgb(241, 241, 241);
@@ -250,6 +231,7 @@ td {
   padding: 2px;
   cursor: pointer;
 }
+
 .el-button:focus {
   background: #409eff;
   border-color: #409eff;

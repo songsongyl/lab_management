@@ -99,6 +99,7 @@
 <script setup lang="ts">
 // import  { TableColumnCtx } from 'element-plus'
 import { reactive, ref, computed } from 'vue';
+import { AdminService } from '@/services/AdminService.ts'
 import { TeacherService } from '@/services/TeacherService.ts'
 import { Failed, ChatDotSquare } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -138,7 +139,7 @@ const add = async () => {
   console.log("进入add");
   dialogFormVisible.value = true
   console.log(dialogFormVisible.value);
- 
+
   console.log("form", form);
 }
 
@@ -163,18 +164,18 @@ const handleBatchDelete = async () => {
   console.log(rows);
   try {
     if (rows.length > 0) {
-      const idsToDelete = rows.map((row:any) => row.id).filter((id:any) => id);
+      const idsToDelete = rows.map((row: any) => row.id).filter((id: any) => id);
       console.log(idsToDelete);
-      
+
       if (idsToDelete.length > 0) {
-        for (let i = 0; i < idsToDelete.length;i++) {
+        for (let i = 0; i < idsToDelete.length; i++) {
           let tid = sessionStorage.getItem('uid')
-          const appointments = await TeacherService.EnableDeleteService(tid, idsToDelete[i]);
+          const appointments = await AdminService.EnableDeleteService(tid, idsToDelete[i]);
           if (appointments) {
             ElMessage.error('当前课程有预约记录,不能删除!!');
           }
         }
-        await TeacherService.deleteCoursesService(idsToDelete);
+        await AdminService.deleteCoursesService(idsToDelete);
         fetchData();
         selectedRows.value = [];
         ElMessage.success("批量删除成功!!");
@@ -200,22 +201,16 @@ const currentPageData = computed(() => {
 const fetchData = async () => {
   try {
     tableData.length = 0;  // 清空 tableData
-    const res: any = await TeacherService.listCoursesService();
-    console.log("res:",res);
-    for (let i = 0; i < res.value.length; i++){
-      if (!res.value[i].id) {
-        console.error('数据缺少id属性:', res.value[i]);
+    const res: any = (await TeacherService.listCoursesService()).value;
+    console.log("res:", res);
+
+    res.forEach((item: any) => {
+      if (!item.id) {
+        console.error('数据缺少id属性:', item);
         return;
       }
-      tableData.push(res.value[i]);
-    }
-    // res.forEach((item: any) => {
-    //   if (!item.id) {
-    //     console.error('数据缺少id属性:', item);
-    //     return;
-    //   }
-    //   tableData.push(item);
-    // });
+      tableData.push(item);
+    });
     total.value = res.length
     console.log(total.value);
     pagerCountValue.value = Math.ceil(total.value / pageSize.value);
@@ -247,16 +242,16 @@ const handleDelete = async (row) => {
   try {
     console.log(row.id);
     let tid = sessionStorage.getItem('uid')
-    const appointments = await TeacherService.EnableDeleteService(tid, row.id);
+    const appointments = await AdminService.EnableDeleteService(tid, row.id);
     if (appointments) {
       ElMessage.error("当前课程有预约记录!!!!");
     }
-    const deleteId = await TeacherService.deleteCourseService(row.id);
+    const deleteId = await AdminService.deleteCourseService(row.id);
     console.log(deleteId);
-    
-      fetchData();
-      ElMessage.success("删除成功!!!!" );
-    
+
+    fetchData();
+    ElMessage.success("删除成功!!!!");
+
   } catch (error) {
     ElMessage.error('Error deleting news:');
   }
@@ -265,10 +260,10 @@ const handleDelete = async (row) => {
 const handleSave = async () => {
   try {
     if (formData.id) {
-      await TeacherService.updateCourseService(formData);
+      await AdminService.updateCourseService(formData);
     } else {
       console.log("id不存在");
-      
+
     }
     dialogVisible.value = false;
     fetchData();
@@ -303,14 +298,14 @@ const handleSaveTable = async () => {
       teacher1 = JSON.parse(teacher!);
       form.teacherId = teacher1.id!
       // console.log(tid);
-      const res: any = await TeacherService.addCourseService(form);
+      const res: any = await AdminService.addCourseService(form);
       console.log(res);
- 
-     
+
+
       ElMessage.success("添加成功!!!!");
       await fetchData()
-      dialogFormVisible.value = false; 
-   
+      dialogFormVisible.value = false;
+
     } else {
       console.log("数据不完整");
     }
@@ -322,7 +317,7 @@ const handleDialogClose = () => {
   formData.id = '';
   formData.clazz = '';
   formData.experimentHour = '';
-  formData.name ='';
+  formData.name = '';
   formData.quantity = '';
   formData.type = '';
   formData.semester = '';
@@ -359,6 +354,4 @@ fetchData();
 .custom-pagination.el-pagination__pager:hover {
   background-color: #ddd;
 }
-
-
 </style>

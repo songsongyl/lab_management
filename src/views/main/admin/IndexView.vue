@@ -33,6 +33,12 @@ const menulist: MenuItem[] = [
         name: "统计",
         index: "/admin/graph",
         icon: House,
+    },
+    {
+        id: 3,
+        name: "课程管理",
+        index: "/admin/courseManager",
+        icon: House,
     }
 ];
 </script>

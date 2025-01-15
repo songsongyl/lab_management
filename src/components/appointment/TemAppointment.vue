@@ -155,15 +155,8 @@ onMounted(() => {
 <template>
   <div class="timetable">
     <div class="timetable-controller">
-      <el-button
-        v-for="lab in labs"
-        :key="lab"
-        class="el-button"
-        size="large"
-        style="margin: 10px 5px"
-        :type="lab.toString() === labSelected ? 'primary' : 'default'"
-        @click="selectLab(lab.toString())"
-      >
+      <el-button v-for="lab in labs" :key="lab" class="el-button" size="large" style="margin: 10px 5px"
+        :type="lab.toString() === labSelected ? 'primary' : 'default'" @click="selectLab(lab.toString())">
         实验室 {{ lab }}
       </el-button>
     </div>
@@ -188,20 +181,10 @@ onMounted(() => {
                 "节"
               }}
             </td>
-            <td
-              v-for="day in weekOfDays"
-              :key="day"
-              class="course-box-background"
-              @click="showDialog(section, day + 1)"
-            >
-              <div
-                v-if="getCellData(section, day + 1).length"
-                class="course-box"
-              >
-                <div
-                  v-for="course in getCellData(section, day + 1)"
-                  :key="course.name"
-                >
+            <td v-for="day in weekOfDays" :key="day" class="course-box-background"
+              @click="showDialog(section, day + 1)">
+              <div v-if="getCellData(section, day + 1).length" class="course-box">
+                <div v-for="course in getCellData(section, day + 1)" :key="course.name">
                   <p>{{ course.name }}</p>
                   <p>{{ course.clazz }}</p>
                   <p>{{ course.teacherName }}</p>
@@ -217,33 +200,23 @@ onMounted(() => {
   </div>
 
   <!-- 课程详情对话框 -->
-  <el-dialog
-    v-model="dialogVisible"
-    title="课程详情"
-    width="800px"
-    :before-close="
-      () => {
-        dialogVisible = false;
-        return true;
-      }
-    "
-  >
+  <el-dialog v-model="dialogVisible" title="课程详情" width="800px" :before-close="() => {
+      dialogVisible = false;
+      return true;
+    }
+    ">
     <el-form>
-      <el-form-item
-        ><p>课程名称</p>
+      <el-form-item>
+        <p>课程名称</p>
         <br />
         <p>上课班级</p>
         <br />
         <p>授课老师</p>
         <br />
         <p>上课周数</p>
-        <br
-      /></el-form-item>
-      <el-form-item
-        v-for="course in currentCellData"
-        :key="course.name"
-        class="el-form-item"
-      >
+        <br />
+      </el-form-item>
+      <el-form-item v-for="course in currentCellData" :key="course.name" class="el-form-item">
         <p>{{ course.name }}</p>
         <br />
         <p>{{ course.clazz }}</p>
@@ -254,27 +227,16 @@ onMounted(() => {
         <br />
       </el-form-item>
       <el-form-item label="选择预约类型：">
-        <el-select v-model="selectedAppointmentType" @change="() => {}">
-          <el-option
-            v-for="type in appointmentTypes"
-            :key="type"
-            :label="type"
-            :value="type"
-          ></el-option>
+        <el-select v-model="selectedAppointmentType" @change="() => { }">
+          <el-option v-for="type in appointmentTypes" :key="type" :label="type" :value="type"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="空闲周次：">
-        <el-button
-          v-for="week in freeWeeks"
-          :key="week"
-          type="default"
-          :plain="selectedFreeWeeks.includes(week)"
+        <el-button v-for="week in freeWeeks" :key="week" type="default" :plain="selectedFreeWeeks.includes(week)"
           :style="{
             margin: '5px',
             backgroundColor: buttonClickedStatus[week] ? '#409eff' : '#d9ecff',
-          }"
-          @click="toggleWeekSelection(week)"
-        >
+          }" @click="toggleWeekSelection(week)">
           第{{ numberToChinese(week) }}周
         </el-button>
       </el-form-item>
@@ -282,55 +244,42 @@ onMounted(() => {
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button
-          type="primary"
-          @click="
-            () => {
-              const appointments = selectedFreeWeeks.map((week) => {
-                let appointment = {
-                  nature: selectedAppointmentType,
-                  week,
-                  teacher: JSON.stringify(store.getUserIdAndName()),
-                  course: JSON.stringify({
-                    id: '0',
-                    name: selectedAppointmentType,
-                  }),
-                  dayofweek: chooseDay,
-                  section: chooseSection,
-                  // section: currentCellData[0].section,
-                  // dayofweek: currentCellData[0].dayofweek,
-                  labId: (+labSelected - 900).toString(),
-                  labName: labSelected,
-                  semester: calendarStore.getSemester(),
-                };
-                console.log(appointment);
-                const submitWeeks = async () => {
-                  await TeacherService.addAppointmentService(appointment);
-                };
-                submitWeeks();
-              });
-              //   console.log('生成的预约信息:', appointments);
-              dialogVisible = false;
-            }
-          "
-        >
+        <el-button type="primary" @click="() => {
+            const appointments = selectedFreeWeeks.map((week) => {
+              let appointment = {
+                nature: selectedAppointmentType,
+                week,
+                teacher: JSON.stringify(store.getUserIdAndName()),
+                course: JSON.stringify({
+                  id: '0',
+                  name: selectedAppointmentType,
+                }),
+                dayofweek: chooseDay,
+                section: chooseSection,
+                // section: currentCellData[0].section,
+                // dayofweek: currentCellData[0].dayofweek,
+                labId: (+labSelected - 900).toString(),
+                labName: labSelected,
+                semester: calendarStore.getSemester(),
+              };
+              console.log(appointment);
+              const submitWeeks = async () => {
+                await TeacherService.addAppointmentService(appointment);
+              };
+              submitWeeks();
+            });
+            //   console.log('生成的预约信息:', appointments);
+            dialogVisible = false;
+          }
+          ">
           确定
         </el-button>
       </span>
     </template>
   </el-dialog>
 
-  <el-select
-    v-model="selectedAppointmentType"
-    style="display: none"
-    ref="appointmentTypeSelect"
-  >
-    <el-option
-      v-for="type in appointmentTypes"
-      :key="type"
-      :label="type"
-      :value="type"
-    ></el-option>
+  <el-select v-model="selectedAppointmentType" style="display: none" ref="appointmentTypeSelect">
+    <el-option v-for="type in appointmentTypes" :key="type" :label="type" :value="type"></el-option>
   </el-select>
 </template>
 <style scoped>
@@ -339,17 +288,21 @@ onMounted(() => {
   padding-top: 0;
   width: 1000px;
 }
+
 .timetable-controller .el-button {
   margin-left: 10px;
 }
+
 .timetable p,
 td {
   font-size: 12px;
   text-align: center;
 }
+
 .timetable-contain {
   margin-top: 20px;
 }
+
 .course-box {
   display: inline-block;
   background: #d9ecff;
@@ -363,6 +316,7 @@ td {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
+
 .course-box-background {
   text-align: center;
   background: rgb(241, 241, 241);
@@ -371,10 +325,12 @@ td {
   padding: 2px;
   cursor: pointer;
 }
+
 .el-form-item-title p {
   margin-top: 10px;
   margin-right: 70px;
 }
+
 .el-form-item p {
   margin-top: 10px;
   margin-right: 50px;

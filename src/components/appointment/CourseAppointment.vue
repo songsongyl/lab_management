@@ -1,18 +1,8 @@
 <template>
   <div style="width: 300px">
     <!-- <h3>动态下拉框（修改后使用课程数据）</h3> -->
-    <el-select
-      v-model="selected2"
-      :loading="loading"
-      @change="handleSelectChange"
-      placeholder="请选择你要预约的课程"
-    >
-      <el-option
-        v-for="item in courses"
-        :value="item.id"
-        :label="item.name"
-        :key="item.id"
-      />
+    <el-select v-model="selected2" :loading="loading" @change="handleSelectChange" placeholder="请选择你要预约的课程">
+      <el-option v-for="item in courses" :value="item.id" :label="item.name" :key="item.id" />
     </el-select>
   </div>
   <div class="course" v-if="selected2">
@@ -31,23 +21,15 @@
   <div class="labs" v-if="selected2">
     <div class="lab">
       座位充足实验室：
-      <el-button
-        v-for="lab in goodlabs"
-        :key="lab.id"
-        :class="{ highlight: selectedLabIdHighlight === lab.id }"
-        @click="gettables(lab.id)"
-      >
+      <el-button v-for="lab in goodlabs" :key="lab.id" :class="{ highlight: selectedLabIdHighlight === lab.id }"
+        @click="gettables(lab.id)">
         {{ lab.name }}
       </el-button>
     </div>
     <div class="lab">
       座位不够实验室：
-      <el-button
-        v-for="lab in badlabs"
-        :key="lab.id"
-        :class="{ highlight: selectedLabIdHighlight === lab.id }"
-        @click="gettables(lab.id)"
-      >
+      <el-button v-for="lab in badlabs" :key="lab.id" :class="{ highlight: selectedLabIdHighlight === lab.id }"
+        @click="gettables(lab.id)">
         {{ lab.name }}
       </el-button>
     </div>
@@ -55,13 +37,10 @@
   <!-- <div class="table" v-if="table">
   table
   </div> -->
-  <div v-if="selectedCourse && selectedLabId && timetable.length > 0">
+  <div v-if="selectedCourse && selectedLabId && timetable">
     <!-- 删除预约按钮 -->
-    <el-button
-      type="danger"
-      @click="deleteAppointment(selectedCourse.id)"
-      :disabled="!selectedCourse || !selectedLabId"
-    >
+    <el-button style="margin: 5px 0 10px 0" type="danger" @click="deleteAppointment(selectedCourse.id)"
+      :disabled="!selectedCourse || !selectedLabId">
       删除预约
     </el-button>
   </div>
@@ -82,58 +61,50 @@
       </thead>
       <tbody>
         <tr v-for="(section, index) in timetable" :key="index">
-          <td>{{ index + 1 }}</td>
-          <td v-for="(course, dayIndex) in section" :key="dayIndex">
-            <div
-              v-if="course"
-              @click="
-                appointmentCourse(index, dayIndex, course.weeks),
-                  openDialog(index, dayIndex, course.weeks)
-              "
-            >
-              <p>
-                <strong>{{ course.courseName }}</strong>
-              </p>
-              <p>{{ course.teacherName }}</p>
-              <p>{{ course.semester }}</p>
-              <p>{{ course.nature }}</p>
-              <p>{{ course.weeks }}</p>
+          <td>{{ index * 2 + 1 }} {{ index * 2 + 2 }}节</td>
+          <td v-for="(coursesInTd, dayIndex) in section" :key="dayIndex">
+            <div v-if="coursesInTd && coursesInTd.length > 0" class="tdcourses">
+              <div v-for="course in coursesInTd" :key="course.name" class="tdcourse">
+                <p>
+                  <strong>{{ course.name }}</strong>
+                </p>
+                <p>{{ course.teacherName }}</p>
+                <p>{{ course.semester }}</p>
+                <p>{{ course.nature }}</p>
+                <p>{{ course.weeks }}</p>
+              </div>
+              <el-button @click="
+                appointmentCourse(index, dayIndex, coursesInTd),
+                openDialog(index, dayIndex, coursesInTd)
+                ">点击预约</el-button>
             </div>
-            <div
-              v-else
-              @click="
+
+            <div class="tdnoappointment" v-else>
+              <!-- <p>无预约</p> -->
+              <el-button @click="
                 appointmentCourse(index, dayIndex, []),
-                  openDialog(index, dayIndex, [])
-              "
-            >
-              <p>无预约</p>
+                openDialog(index, dayIndex, [])
+                ">点击预约</el-button>
+
             </div>
           </td>
         </tr>
       </tbody>
     </table>
   </div>
-  <el-dialog
-    v-model="dialogVisible"
-    title="请选择你要预约的周次"
-    @close="selectedWeeks = []"
-  >
+  <el-dialog v-model="dialogVisible" title="请选择你要预约的周次" @close="selectedWeeks = []">
+    <p>当前课程：{{ selectedCourse?.name }}</p>
     <p>当前星期：{{ currentDay }}</p>
     <p>当前节次：{{ currentSection }}</p>
 
     <el-checkbox-group v-model="selectedWeeks" @change="handleWeekCheck">
-      <el-checkbox
-        v-for="week in allWeeks"
-        :label="week"
-        :key="week"
-        :disabled="appointmentWeeks.includes(week)"
-        >第{{ week }}周</el-checkbox
-      >
+      <el-checkbox v-for="week in allWeeks" :label="week" :key="week" :disabled="isWeekDisabled(week)">第{{ week
+        }}周</el-checkbox>
     </el-checkbox-group>
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="submitWeeks">提交</el-button>
+        <el-button type="primary" @click="submitWeeks" :disabled="!hasSelectedWeeks">提交</el-button>
       </span>
     </template>
   </el-dialog>
@@ -148,6 +119,8 @@ import type { Course, Appointment, User } from "@/types/index";
 import { TeacherService } from "@/services/TeacherService";
 import { ElDialog, ElCheckbox, ElCheckboxGroup } from "element-plus";
 //数据
+//选中的周次合理
+const selectedValidWeek = ref(false);
 //输入框的值
 const selected2 = ref("");
 //被选中的课程
@@ -185,38 +158,68 @@ const selectedLabIdHighlight = ref(""); // 用于记录当前高亮显示的实�
 const selectedLabId = ref("");
 // 记录当前所选实验室的 name
 const selectedLabName = ref("");
+//一个td中要渲染的课程数组
+//const tdcourses = ref();
 //const currentteacherName = ref("");
+//判断提交按钮是否有效
+const hasSelectedWeeks = ref(false);
 //方法
+//删除预约请求
 async function deleteAppointment(courseId: any) {
   try {
     await TeacherService.deleteAppointment(courseId);
     console.log("**********");
     //console.log(courses.value);
     //loading.value = false;
+    location.reload(); // 刷新页面
   } catch (error) {
     console.error("Error:", error);
   }
 }
 //控制模态框
-const openDialog = (section: any, dayofweek: any, existingWeeks: any) => {
+const openDialog = (section: any, dayofweek: any, tdcourses: any) => {
   if (
     selectedCourse.value &&
     selectedCourse.value.experimentHour !== hour.value.value
   ) {
     dialogVisible.value = true;
     //已经被选的周次
-    appointmentWeeks.value = existingWeeks;
+    if (tdcourses && tdcourses.length > 0) {
+      tdcourses.forEach((course) => {
+        course.weeks.forEach((week) => {
+          appointmentWeeks.value.push(week);
+        });
+      });
+    }
     // 设置当前节次和星期
     currentSection.value = section + 1;
     currentDay.value = dayofweek + 1;
     console.log("节次和周", currentSection, currentDay);
   }
 };
-//更新选中周次
-const handleWeekCheck = (val: number[]) => {
-  selectedWeeks.value = val; // 更新选中的周次数组
+// 动态计算是否禁用某个周次按钮
+const isWeekDisabled = (week: number) => {
+  const validWeek = Math.floor(
+    (selectedCourse.value?.experimentHour! - hour.value) / 2
+  );
+  // 如果已选的周次达到 validWeek，且当前周次未被选中，则禁用
+  return selectedWeeks.value.length >= validWeek && !selectedWeeks.value.includes(week) || appointmentWeeks.value.includes(week);
 };
-//提交
+// 更新选中周次逻辑
+const handleWeekCheck = (val: number[]) => {
+  console.log("当前选中的周次：", val);
+  selectedWeeks.value = val; // 更新选中的周次数组
+  hasSelectedWeeks.value = val.length > 0; // 根据选中周次的数量来更新按钮可用状态
+
+  const validWeek = Math.floor(
+    (selectedCourse.value?.experimentHour! - hour.value) / 2
+  );
+  console.log("可选的最大周次数量：", validWeek);
+
+  // 更新选中状态
+  selectedValidWeek.value = val.length >= validWeek;
+};
+//提交 5、添加预约请求
 const submitWeeks = async () => {
   // 这里可以添加逻辑将selectedWeeks.value发送到后端或者进行其他处理
   dialogVisible.value = false;
@@ -258,6 +261,8 @@ const submitWeeks = async () => {
             appointmentData.week = week;
             await TeacherService.addAppointmentService(appointmentData);
           }
+          // 提交成功后刷新页面
+          location.reload(); // 刷新页面
         } else {
           console.error(
             "从 sessionStorage 获取的用户信息中缺少有效的 name 属性"
@@ -300,9 +305,7 @@ async function fetchData() {
   }
 }
 //调用1
-onMounted(() => {
-  fetchData();
-});
+fetchData();
 //2、获取当前课程已选学时
 async function getHours(id: any) {
   try {
@@ -357,12 +360,12 @@ const processAppointmentData = (appointments: Appointment[]) => {
   console.log("22222222222");
   console.log(appointments);
   // 处理预约数据
-  appointments.forEach((appointment: any) => {
+  appointments.forEach((appointment) => {
     // console.log(appointment.teacher);
     console.log(appointment.course);
     console.log(typeof appointment.course);
-    const teacher = JSON.parse(appointment.teacher) as User;
-    const course = JSON.parse(appointment.course) as Course;
+    const teacher = JSON.parse(appointment.teacher as string) as User;
+    const course = JSON.parse(appointment.course as string) as Course;
     const { id: courseId, name: courseName } = course;
     console.log(courseId, courseName);
     const { id: teacherId, name: teacherName } = teacher;
@@ -372,29 +375,42 @@ const processAppointmentData = (appointments: Appointment[]) => {
 
     const week = appointment.week;
 
-    const day = appointment.dayofweek - 1; // 转换为 0 索引
-    const section = appointment.section - 1; // 转换为 0 索引
+    const day = appointment.dayofweek! - 1; // 转换为 0 索引
+    const section = appointment.section! - 1; // 转换为 0 索引
     console.log(`处理课程：${courseName}`);
     console.log(`section: ${section}, day: ${day}`);
 
     if (section >= 0 && section < 6 && day >= 0 && day < 7) {
-      // 如果该节次和星期已有课程，合并周次
       if (timetable[section][day]) {
-        const existingCourse = timetable[section][day];
-
-        // 合并周次
-        if (!existingCourse.weeks.includes(week)) {
-          existingCourse.weeks.push(week);
+        const existingCourses = timetable[section][day];
+        const targetCourseIndex = existingCourses.findIndex(
+          (element: any) => element.name === courseName
+        );
+        if (targetCourseIndex !== -1) {
+          // 相同课程，合并周次
+          if (!existingCourses[targetCourseIndex].weeks.includes(week)) {
+            existingCourses[targetCourseIndex].weeks.push(week);
+          }
+        } else {
+          // 不同课程，新增课程到数组
+          existingCourses.push({
+            name: courseName,
+            teacherName: teacherName,
+            semester: appointment.semester,
+            nature: appointment.nature,
+            weeks: [week],
+          });
         }
       } else {
-        // 如果该节次和星期没有课程，则新增
-        timetable[section][day] = {
-          courseName: courseName,
-          teacherName: teacherName,
-          semester: appointment.semester,
-          nature: appointment.nature,
-          weeks: [week], // 初始化周次数组
-        };
+        timetable[section][day] = [
+          {
+            name: courseName,
+            teacherName: teacherName,
+            semester: appointment.semester,
+            nature: appointment.nature,
+            weeks: [week],
+          },
+        ];
       }
     } else {
       console.error("无效的section或day:", section, day);
@@ -422,20 +438,21 @@ const gettables = (val: any) => {
 //const table = ref(false);
 //选中td时调用
 // 选中td时调用
-const appointmentCourse = (section: any, dayofweek: any, weeks: any) => {
+const appointmentCourse = (section: any, dayofweek: any, tdcourses: any) => {
   console.log("你选中的星期是", dayofweek + 1);
   console.log("你选中的节次是", section + 1);
   // 检查 weeks 是否为空，如果不为空则打印其内容
-  if (weeks && weeks.length > 0) {
-    weeks.forEach((element) => {
-      console.log("已经被选的周次是", element);
+  if (tdcourses && tdcourses.length > 0) {
+    tdcourses.forEach((element) => {
+      element.weeks.forEach((week) => {
+        console.log("已经被选的周次是", week);
+      });
     });
   } else {
     console.log("目前没有没有选中的周次");
   }
-  console.log(selectedCourse.value.experimentHour);
+  console.log(selectedCourse.value!.experimentHour);
   console.log(hour.value.value);
-
   if (
     selectedCourse.value &&
     selectedCourse.value.experimentHour === hour.value.value
@@ -451,24 +468,57 @@ const appointmentCourse = (section: any, dayofweek: any, weeks: any) => {
 .lab {
   margin: 10px 0;
 }
+
 table {
   width: 100%;
   border-collapse: collapse;
 }
+
 th,
 td {
-  /* padding: 8px; */
+  width: 150px;
+  /* 设置单元格宽度 */
+  height: 100px;
+  /* 设置单元格高度 */
   text-align: center;
+  /* 让内容居中 */
+  vertical-align: middle;
+  /* 让内容垂直居中 */
+  border: 1px solid #ccc;
+  /* 添加边框，便于查看效果 */
+  box-sizing: border-box;
+  /* 确保 padding 不影响宽高 */
 }
+
 th {
   background-color: #f4f4f4;
 }
+
 td div {
   padding: 5px;
   cursor: pointer;
+  /* border: 1px solid blue; */
 }
+
 .highlight {
-  background-color: #007bff; /* 设置背景颜色为蓝色，你可以根据需求调整颜色值 */
-  color: white; /* 设置文字颜色为白色，与背景色搭配，同样可按需调整 */
+  background-color: #007bff;
+  /* 设置背景颜色为蓝色，你可以根据需求调整颜色值 */
+  color: white;
+  /* 设置文字颜色为白色，与背景色搭配，同样可按需调整 */
+}
+
+.tdcourses {
+  padding: 10px;
+  /* border: 1px solid red; */
+}
+
+.tdcourse {
+  background-color: aquamarine;
+  margin: 10px;
+}
+
+.tdnoappointment {
+  /* border: 1px solid red; */
+  padding: 10px;
 }
 </style>

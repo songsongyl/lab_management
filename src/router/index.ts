@@ -40,7 +40,11 @@ const router = createRouter({
              {
               path: "graph",
               component: () => import("@/components/graph/graph.vue"),
-            }
+             },
+             {
+              path: "courseManager",
+              component: () => import("@/components/course/CourseManagement.vue"),
+             }
           ]
         },
         {

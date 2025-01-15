@@ -18,7 +18,9 @@ import { onMounted, ref } from "vue";
         </el-aside>
         <!-- </el-affix> -->
         <el-main>
-          <div class="fitsize"><RouterView></RouterView></div>
+          <div class="fitsize">
+            <RouterView></RouterView>
+          </div>
         </el-main>
       </el-container>
     </el-container>
@@ -31,6 +33,7 @@ import { onMounted, ref } from "vue";
   padding: 0;
   margin: 0;
 }
+
 #menu {
   min-height: calc(100vh + 60px);
 }
@@ -41,6 +44,7 @@ import { onMounted, ref } from "vue";
   display: flex;
   justify-content: space-between;
 }
+
 .el-header {
   position: fixed;
   background-color: #2b2c44;
@@ -48,16 +52,19 @@ import { onMounted, ref } from "vue";
   z-index: 99;
   padding: 0;
 }
+
 .el-aside {
   background-color: #2b2c44;
   width: 200px;
   margin-top: 60px;
   min-height: calc(100vh);
 }
+
 .el-main {
   margin-top: 75px;
   left: 200px;
 }
+
 /* .fitsize {
   zoom: 75%;
 } */

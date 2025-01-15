@@ -2,14 +2,8 @@
   <div class="login-register">
     <div class="contain">
       <div class="big-box" :class="{ active: isLogin }">
-        <el-form
-          ref="ruleFormRef"
-          :model="form"
-          class="big-contain"
-          key="bigContainLogin"
-          v-if="isLogin"
-          :rules="rules"
-        >
+        <el-form ref="ruleFormRef" :model="form" class="big-contain" key="bigContainLogin" v-if="isLogin"
+          :rules="rules">
           <div class="btitle">账户登录</div>
           <!-- prop="account"绑定校验规则 -->
           <el-form-item prop="account" class="input-container">
@@ -17,24 +11,16 @@
           </el-form-item>
 
           <el-form-item prop="password" class="input-container">
-            <el-input
-              placeholder="密码"
-              v-model="form.password"
-              type="password"
-              show-password
-            />
+            <el-input placeholder="密码" v-model="form.password" type="password" show-password />
           </el-form-item>
-          <el-button class="login-button" @click="handleLogin(ruleFormRef)"
-            >登录</el-button
-          >
+          <el-form-item class="input-container">
+            <HomeView ref="homeView" class="yzm" @code-validated="handleValidation" />
+          </el-form-item>
+          <el-button class="login-button" @click="handleLogin(ruleFormRef)">登录</el-button>
         </el-form>
         <div class="big-contain" key="bigContainRegister" v-else>
           <span class="lab-span">实验室预约系统</span>
-          <img
-            class="lab-image"
-            src="../../../img/实验室管理系统宣传封面.jpg"
-            alt=""
-          />
+          <img class="lab-image" src="../../../img/实验室管理系统宣传封面.jpg" alt="" />
         </div>
       </div>
       <div class="small-box" :class="{ active: isLogin }">
@@ -64,6 +50,8 @@ import {
 } from "element-plus";
 import { CommonService } from "@/services";
 import { fi } from "element-plus/es/locales.mjs";
+import HomeView from '@/components/HomeView.vue'
+import { useRouter } from 'vue-router'
 // import { login } from "@/api/login";
 
 //数据
@@ -74,7 +62,7 @@ const form = ref({
   account: "2333333333",
   password: "123456",
 });
-
+const router = useRouter();
 const rules = ref<FormRules<RuleForm>>({
   account: [
     {
@@ -109,6 +97,18 @@ const changeType = () => {
   isLogin.value = !isLogin.value;
 };
 
+function handleValidation(isValid) {
+  if (isValid) {
+    alert("验证码验证通过");
+    // 执行登录操作
+    // loginF()
+    router.push("/home");
+  } else {
+    alert("验证码验证失败");
+    router.push("/")
+    // 提示用户验证码错误
+  }
+}
 //登录按钮校验
 const handleLogin = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
@@ -118,6 +118,7 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
         account: form.value.account,
         password: form.value.password,
       });
+      homeView.value.validateCode();
       // console.log(res);
       // console.log("submit!");
       // console.log()
@@ -300,5 +301,9 @@ const handleLogin = async (formEl: FormInstance | undefined) => {
   border-bottom-right-radius: inherit;
   transform: translateX(-100%);
   transition: all 1s;
+}
+.yzm{
+  width: 50%;
+  margin-left: 110px;
 }
 </style>

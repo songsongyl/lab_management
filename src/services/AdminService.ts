@@ -83,4 +83,42 @@ export class AdminService {
         return res
   }
 
+
+  @StoreCache(coursesStore.coursesS)
+  @ELLoading()
+  static async addCourseService(course) {
+    console.log("你将要添加课程数据");
+    const data = await usePost(`users/course`,course);
+    return data as unknown as Ref<Course[]>;
+  }
+  @StoreCache(coursesStore.coursesS)
+  @ELLoading()
+  static async deleteCourseService(id:string) {
+    console.log("你将要删除课程数据");
+    const data= await useDelete(`users/courses/course/${id}`);
+    return data as unknown as Ref<Course[]>;
+  }
+
+   @StoreCache(coursesStore.coursesS)
+  @ELLoading()
+  static async deleteCoursesService(ids:string) {
+    console.log("你将要删除课程数据");
+    const data = await useDelete(`users/courses/${ids}`);
+    return data as unknown as Ref<Course[]>;
+  }
+      @StoreCache(coursesStore.coursesS)
+  @ELLoading()
+  static async updateCourseService(course) {
+    console.log("你将要更新课程数据");
+        const data = await usePatch(`users/course`, course);
+        console.log("更新成功");
+        
+    return data as unknown as Ref<Course[]>;
+  }
+  @ELLoading()
+  static async EnableDeleteService(tid,cid) {
+    const data = await useGet(`users/appointments/${tid}/${cid}`);
+    return data as unknown as Ref<Course[]>;
+  }
+ 
 }

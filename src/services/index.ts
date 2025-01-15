@@ -66,12 +66,8 @@ export class CommonService {
     router.push("/login");
   };
 
-  static updateSelfPassword = async (pwd: string, uid: string) => {
-    let user = {
-      password: pwd,
-      id: uid
-    }
-   const res = await usePatch("users/password", user);
+  static updateSelfPassword = async (pwd: string) => {
+    const res = await usePatch("users/password", {  password:pwd });
     console.log(res);
     
   };
